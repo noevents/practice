@@ -8,7 +8,8 @@ const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const StylelintPlugin = require('stylelint-webpack-plugin')
 const ManifestPlugin = require('webpack-manifest-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
-const CleanPlugin = require('clean-webpack-plugin')
+const DelWebpackPlugin = require('del-webpack-plugin')
+const GhPagesWebpackPlugin = require('gh-pages-webpack-plugin')
 
 const parts = require('./webpack.parts')
 
@@ -27,7 +28,7 @@ const lintJSOptions = {
 
 const PATHS = {
   app: path.join(__dirname, 'app'),
-  build: path.join(__dirname, 'build')
+  build: path.join(__dirname, 'app/build')
 }
 
 const lintStylesOptions = {
@@ -49,7 +50,7 @@ const commonConfig = merge([
     entry: `${PATHS.app}/scripts`,
     output: {
       path: PATHS.build,
-      publicPath: parts.publicPath
+      publicPath: ''
     },
     plugins: [
       new HtmlPlugin({
@@ -84,20 +85,24 @@ const productionConfig = merge([
       maxAssetSize: 450000 // in bytes
     },
     plugins: [
-      // new GhPagesWebpackPlugin({
-      //   path: './public',
-      //   options: {
-      //       message: 'Update',
-      //       user: {
-      //           name: 'noevents',
-      //           email: 'anonananasik@gmail.com'
-      //       }
-      //   }
-      // }),
+      new DelWebpackPlugin({
+        info: true,
+        include: [PATHS.build]
+      }),
+      new GhPagesWebpackPlugin({
+        path: './build',
+        options: {
+          repo: 'https://github.com/noevents/practice.git',
+          message: 'Update',
+          user: {
+            name: 'noevents',
+            email: 'anonananasik@gmail.com'
+          }
+        }
+      }),
       new webpack.HashedModuleIdsPlugin(),
       new ManifestPlugin(),
-      new BundleAnalyzerPlugin(),
-      new CleanPlugin(PATHS.build)
+      new BundleAnalyzerPlugin()
     ]
   },
   parts.minifyJS(),
